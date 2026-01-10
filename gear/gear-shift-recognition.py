@@ -69,25 +69,8 @@ def get_gear_zone(x, y, w, h):
 
 last_gear = None
 
-
-# --- Pedal zone and foot detection additions ---
-def get_pedal_zone(x, y, w, h, pedal_zone_height=0.25):
-    # Only consider bottom pedal_zone_height of the frame
-    pedal_top = int(h * (1 - pedal_zone_height))
-    if y < pedal_top:
-        return None
-    left = w // 3
-    right = 2 * w // 3
-    if x < left:
-        return 'CLUTCH'
-    elif x > right:
-        return 'ACCELERATOR'
-    else:
-        return 'BRAKE'
-
-last_pedal = None
-
-cap = cv2.VideoCapture(0)
+# Change camera index here (0 = default webcam, 1 = external camera, etc.)
+cap = cv2.VideoCapture(0)  # Use default webcam
 while True:
     ret, frame = cap.read()
     if not ret:
@@ -95,22 +78,14 @@ while True:
     frame = cv2.flip(frame, 1)
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-    h, w, _ = frame.shape
     # Draw gear zones for visualization
+    h, w, _ = frame.shape
+    # Vertical lines
     cv2.line(frame, (w//3, 0), (w//3, h), (200, 200, 200), 1)
     cv2.line(frame, (2*w//3, 0), (2*w//3, h), (200, 200, 200), 1)
+    # Horizontal lines
     cv2.line(frame, (0, h//3), (w, h//3), (200, 200, 200), 1)
     cv2.line(frame, (0, 2*h//3), (w, 2*h//3), (200, 200, 200), 1)
-
-    # Draw pedal zones at the bottom
-    pedal_zone_height = 0.25
-    pedal_top = int(h * (1 - pedal_zone_height))
-    cv2.rectangle(frame, (0, pedal_top), (w//3, h), (180, 220, 255), 2)
-    cv2.rectangle(frame, (w//3, pedal_top), (2*w//3, h), (180, 220, 255), 2)
-    cv2.rectangle(frame, (2*w//3, pedal_top), (w, h), (180, 220, 255), 2)
-    cv2.putText(frame, 'CLUTCH', (10, h-10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (180, 220, 255), 2)
-    cv2.putText(frame, 'BRAKE', (w//3+10, h-10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (180, 220, 255), 2)
-    cv2.putText(frame, 'ACCELERATOR', (2*w//3+10, h-10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (180, 220, 255), 2)
 
     # HandLandmarker expects a numpy array (RGB image)
     from mediapipe.tasks.python.vision.core.image import Image
@@ -156,38 +131,7 @@ while True:
             cv2.circle(frame, (wx, wy), 8, (255, 0, 0), 2)
             cv2.putText(frame, f'Gear: {gear}', (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 0), 3)
 
-    # --- Simple foot detection using color segmentation (placeholder) ---
-    # Convert to HSV for color segmentation
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    # Example: Detect dark regions (e.g., black shoe/sock)
-    lower = np.array([0, 0, 0])
-    upper = np.array([180, 255, 60])
-    mask = cv2.inRange(hsv, lower, upper)
-    # Focus only on pedal zone
-    pedal_mask = np.zeros_like(mask)
-    pedal_mask[pedal_top:h, :] = mask[pedal_top:h, :]
-    # Find contours in pedal zone
-    contours, _ = cv2.findContours(pedal_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    pedal = None
-    for cnt in contours:
-        area = cv2.contourArea(cnt)
-        if area > 1000:  # Minimum area threshold
-            M = cv2.moments(cnt)
-            if M['m00'] == 0:
-                continue
-            cx = int(M['m10']/M['m00'])
-            cy = int(M['m01']/M['m00'])
-            pedal = get_pedal_zone(cx, cy, w, h, pedal_zone_height)
-            cv2.drawContours(frame, [cnt], -1, (0, 128, 255), 2)
-            cv2.circle(frame, (cx, cy), 10, (0, 128, 255), -1)
-            break  # Only consider the largest/first detected foot
-    if pedal and pedal != last_pedal:
-        print(f"Pedal pressed: {pedal}")
-        last_pedal = pedal
-    if pedal:
-        cv2.putText(frame, f'Pedal: {pedal}', (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
-
-    cv2.imshow('Hand & Pedal Detection', frame)
+    cv2.imshow('Hand Detection', frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 

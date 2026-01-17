@@ -107,8 +107,9 @@ def get_steering_key_two_hands(smoothed_angle, prev_key):
             return None
 
 
+CAMERA_INDEX = 2  # Update this index to select the desired camera
 # Main loop for steering detection
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(CAMERA_INDEX)
 while True:
     ret, frame = cap.read()
     if not ret:
@@ -176,7 +177,6 @@ while True:
             keyboard.press(STEERING_KEY_MAP[steering_key])
         except Exception:
             pass
-
 
     # ...existing code...
 

@@ -69,8 +69,10 @@ def get_gear_zone(x, y, w, h):
 
 last_gear = None
 
-# Change camera index here (0 = default webcam, 1 = external camera, etc.)
-cap = cv2.VideoCapture(0)  # Use default webcam
+# Global variable for camera selection
+CAMERA_INDEX = 2  # Update this index to select the desired camera
+
+cap = cv2.VideoCapture(CAMERA_INDEX)  # Use selected camera
 while True:
     ret, frame = cap.read()
     if not ret:

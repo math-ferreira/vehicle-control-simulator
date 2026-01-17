@@ -38,8 +38,10 @@ key_state_right = None
 CROP_LOWER_BODY = 1.0
 
 
+# Global variable for camera selection
+CAMERA_INDEX = 2svw  # Update this index to select the desired camera
 # --- Main loop: Detect black sock and interpret as gear shift ---
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(CAMERA_INDEX)
 while True:
     ret, frame = cap.read()
     if not ret:

@@ -23,7 +23,10 @@ options = HandLandmarkerOptions(
 )
 landmarker = HandLandmarker.create_from_options(options)
 
-cap = cv2.VideoCapture(0)
+# Global variable for camera selection
+CAMERA_INDEX = 2  # Update this index to select the desired camera
+
+cap = cv2.VideoCapture(CAMERA_INDEX)
 while True:
     ret, frame = cap.read()
     if not ret:

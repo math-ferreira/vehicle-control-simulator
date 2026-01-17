@@ -32,9 +32,11 @@ def calculate_steering_angle(hand_landmarks, w, h):
     # Normalize angle to [-180, 180], where 0 is straight
     return angle
 
+# Global variable for camera selection
+CAMERA_INDEX = 2  # Update this index to select the desired camera
 
 # Main loop for steering detection
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(CAMERA_INDEX)
 while True:
     ret, frame = cap.read()
     if not ret:
@@ -69,7 +71,6 @@ while True:
         cv2.line(frame, (wx, wy), (ix, iy), (255, 255, 0), 2)
         # Display angle
         cv2.putText(frame, f'Steering: {int(steering_angle)} deg', (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 0), 3)
-
 
     # ...existing code...
 
